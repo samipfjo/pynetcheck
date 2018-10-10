@@ -18,10 +18,6 @@ import arrow
 import speedtest
 
 
-TIMEZONE = 'US/Pacific'
-TIMESTAMP_FORMAT = 'YY/MM/DD HH:mm'
-
-
 class PyNetCheck:
     def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format):
         self.ping_count = ping_count
@@ -30,6 +26,16 @@ class PyNetCheck:
         self.db = sqlite3.connect(db_filename)
         self.timezone = timezone
         self.timestamp_format = timestamp_format
+
+        if sys.platform in ('linux', 'cygwin', 'darwin'):
+            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
+            self.min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
+        elif sys.platform == 'win32':
+            self.percent_lost_re = re.compile(r'(?<percent_lost>\d{1,3})% loss')
+            self.min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
+        else:
+            raise Exception('Unsupported Platform.')
+
 
     def maybe_create_tables(self):
         """
@@ -74,7 +80,7 @@ class PyNetCheck:
 
         self.consprint('Running pings...', end='')
 
-        datetime = arrow.now(TIMEZONE).format(TIMESTAMP_FORMAT)
+        datetime = arrow.now(self.timezone).format(self.timestamp_format)
 
         percent_lost, min_ms, average_ms, max_ms = self.execute_ping()
 
@@ -116,20 +122,14 @@ class PyNetCheck:
         count = count or self.ping_count
 
         if sys.platform in ('linux', 'cygwin', 'darwin'):
-            percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
-            min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
-
             data = str(subprocess.Popen(['ping', host, '-c', str(count)], stdout=subprocess.PIPE).stdout.read())
         elif sys.platform == 'win32':
-            percent_lost_re = re.compile(r'(?<percent_lost>[0-9]{1,3})% loss')
-            min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
-
             data = str(subprocess.Popen(['ping', host, '-n', str(count)], stdout=subprocess.PIPE).stdout.read())[2:-1]
         else:
             raise Exception('Unsupported Platform.')
 
-        percent_lost_match = percent_lost_re.search(data)
-        timing_match = min_max_avg_re.search(data)
+        percent_lost_match = self.percent_lost_re.search(data)
+        timing_match = self.min_max_avg_re.search(data)
 
         percent_lost = int(round(float(percent_lost_match.group('percent_lost'))))
         min_ms = int(round(float(timing_match.group('min'))))
