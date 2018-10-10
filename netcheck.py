@@ -130,7 +130,7 @@ def dump_data_to_csv():
             ping_data = database_connection.execute('SELECT * FROM pings').fetchall()
             ping_writer.writerows(ping_data)
 
-        with open('pings.csv', 'w', newline='') as speedtest_file:
+        with open('speedtests.csv', 'w', newline='') as speedtest_file:
             print('\t'.join('Date/time Ping Download Upload Server'.split()), file=speedtest_file)
 
             speedtest_writer = csv.writer(speedtest_file, dialect='pretty')
