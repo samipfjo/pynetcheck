@@ -26,7 +26,7 @@ TIMEZONE = 'US/Pacific'
 TIMESTAMP_FORMAT = 'YY/MM/DD HH:mm'
 
 PING_DESTINATION = 'www.google.com'
-PING_QUANTITY = 5
+PING_QUANTITY = 25
 
 
 database_connection = sqlite3.connect('connection_data.sqlite')
