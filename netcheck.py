@@ -26,14 +26,8 @@ TIMEZONE = 'US/Pacific'
 TIMESTAMP_FORMAT = 'YY/MM/DD HH:mm'
 
 PING_DESTINATION = 'www.google.com'
-PING_QUANTITY = 25
+PING_QUANTITY = 5
 
-
-# ------
-percent_lost_re = re.compile('([0-9]{1,3})% loss')
-min_ms_re = re.compile('Minimum = ([0-9]+)')
-max_ms_re = re.compile('Maximum = ([0-9]+)')
-average_ms_re = re.compile('Average = ([0-9]+)')
 
 database_connection = sqlite3.connect('connection_data.sqlite')
 
@@ -84,13 +78,8 @@ def ping_speedtest_save():
     consprint('Running pings...', end='')
 
     datetime = arrow.now(TIMEZONE).format(TIMESTAMP_FORMAT)
-    data = str(subprocess.Popen(['ping', PING_DESTINATION, '-n', str(PING_QUANTITY)], stdout=subprocess.PIPE).stdout.read())[2:-1]
 
-    # Extract data from ping results
-    percent_lost = percent_lost_re.search(data).group(1)
-    min_ms = min_ms_re.search(data).group(1)
-    max_ms = max_ms_re.search(data).group(1)
-    average_ms = average_ms_re.search(data).group(1)
+    percent_lost, min_ms, average_ms, max_ms = ping(PING_DESTINATION, PING_QUANTITY)
 
     # ---
     consprint('\rRunning speedtest...', end='')
@@ -117,6 +106,34 @@ def ping_speedtest_save():
         database_connection.execute(
             'INSERT INTO speedtests(date, ping, download_mbps, upload_mbps, server) VALUES (?, ?, ?, ?, ?)',
             (datetime, speedtest_ping, speedtest_dl_mbps, speedtest_up_mbps, speedtest_server))
+
+def ping(host, count):
+    """
+    Cross-platform ping implementation. Only tested under linux, but should be
+    functional under macOS and Cygwin as AFAIK their outputs are the same...
+    """
+    if sys.platform in ('linux', 'cygwin', 'darwin'):
+        percent_lost_re = re.compile('(?P<percent_lost>\d*[.,]?\d*)% packet loss')
+        min_max_avg_re = re.compile("min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)")
+
+        data = str(subprocess.Popen(['ping', host, '-c', str(count)], stdout=subprocess.PIPE).stdout.read())
+    elif sys.platform == 'win32':
+        percent_lost_re = re.compile('(?<percent_lost>[0-9]{1,3})% loss')
+        min_max_avg_re = re.compile('Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
+
+        data = str(subprocess.Popen(['ping', host , '-n', str(count)], stdout=subprocess.PIPE).stdout.read())[2:-1]
+    else:
+        raise Exception('Unsupported Platform.')
+
+    percent_lost_match = percent_lost_re.search(data)
+    timing_match = min_max_avg_re.search(data)
+
+    percent_lost = int(round(float(percent_lost_match.group('percent_lost'))))
+    min_ms = int(round(float(timing_match.group('min'))))
+    average_ms = int(round(float(timing_match.group('avg'))))
+    max_ms = int(round(float(timing_match.group('max'))))
+
+    return percent_lost, min_ms, average_ms, max_ms
 
 # ------
 def dump_data_to_csv():
