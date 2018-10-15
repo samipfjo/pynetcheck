@@ -1,5 +1,5 @@
 # pynetcheck
-Scheduled ping checks and speedtests with data persistence. Currently Windows only.  
+Scheduled ping checks and speedtests with data persistence. Currently supports Windows and Linux, though macOS and others may be supported as well.
 
 &nbsp;
 
