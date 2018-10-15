@@ -4,7 +4,7 @@ Description   :: A tool for automated ping and speedtest scheduling, configurabl
 Project Home  :: https://github.com/luketimothyjones/pynetcheck
 License       :: MIT + attribution (maintaining this header block is plenty)
 Contributors  :: Luke Pflibsen-Jones [GH: luketimothyjones] (author)
-              :: Joseph Redfern [GH: JosephRedfern]  (cross-platform support, conversion into class, CLI)
+              :: Joseph Redfern [GH: JosephRedfern]  (cross-platform support, conversion into class, basic CLI)
 """
 
 import csv
