@@ -1,0 +1,9 @@
+PING www.google.com (74.125.195.104) 56(84) bytes of data.
+64 bytes from wj-in-f104.1e100.net (74.125.195.104): icmp_seq=1 ttl=128 time=31.2 ms
+64 bytes from wj-in-f104.1e100.net (74.125.195.104): icmp_seq=2 ttl=128 time=25.3 ms
+64 bytes from wj-in-f104.1e100.net (74.125.195.104): icmp_seq=3 ttl=128 time=26.0 ms
+64 bytes from wj-in-f104.1e100.net (74.125.195.104): icmp_seq=4 ttl=128 time=25.1 ms
+
+--- www.google.com ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3007ms
+rtt min/avg/max/mdev = 25.103/26.941/31.293/2.539 ms

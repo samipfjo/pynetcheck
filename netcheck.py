@@ -20,7 +20,7 @@ import speedtest
 
 class PyNetCheck:
 
-    def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format):
+    def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format, _test_platform=None):
         """
         Interface for automated ping and throughput (speed) tests.
         See command line options for usage.
@@ -33,11 +33,11 @@ class PyNetCheck:
         self.timezone = timezone
         self.timestamp_format = timestamp_format
 
-        if sys.platform in ('linux', 'cygwin', 'darwin'):
+        if sys.platform in ('linux', 'cygwin', 'darwin') or _test_platform in ('linux', 'cygwin', 'darwin'):
             self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
             self.min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
 
-        elif sys.platform == 'win32':
+        elif sys.platform == 'win32' or _test_platform == 'win32':
             self.percent_lost_re = re.compile(r'(?P<percent_lost>\d{1,3})% loss')
             self.min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
 
@@ -84,7 +84,7 @@ class PyNetCheck:
         sys.stdout.flush()
 
     # ----
-    def ping_speedtest_save(self):
+    def ping_speedtest_save(self, _test_ping_data=None):
         """
         Run single ping test, speed test, and write results to DB.
         """
@@ -93,7 +93,7 @@ class PyNetCheck:
 
         datetime = arrow.now(self.timezone).format(self.timestamp_format)
 
-        percent_lost, min_ms, average_ms, max_ms = self.execute_ping()
+        percent_lost, min_ms, average_ms, max_ms = self.execute_ping(_test_data=_test_ping_data)
 
         self.consprint('\rRunning speedtest...', end='')
 
@@ -124,7 +124,7 @@ class PyNetCheck:
                             (datetime, speedtest_ping, speedtest_dl_mbps, speedtest_up_mbps, speedtest_server))
 
     # ----
-    def execute_ping(self, host=None, count=None):
+    def execute_ping(self, host=None, count=None, _test_data=None):
         """
         Cross-platform ping implementation. Only tested under linux, but should be
         functional under macOS and Cygwin as AFAIK their outputs are the same...
@@ -133,7 +133,10 @@ class PyNetCheck:
         host = host or self.ping_host
         count = count or self.ping_count
 
-        if sys.platform in ('linux', 'cygwin', 'darwin'):
+        if _test_data is not None:
+            data = _test_data
+
+        elif sys.platform in ('linux', 'cygwin', 'darwin'):
             data = str(subprocess.Popen(['ping', host, '-c', str(count)], stdout=subprocess.PIPE).stdout.read())
 
         elif sys.platform == 'win32':
@@ -185,14 +188,14 @@ class PyNetCheck:
             time.sleep(self.test_delay * 60)
 
     # ----
-    def run_once(self):
+    def run_once(self, _test_ping_data=None):
         """
         Runs the ping/speedtest once rather than in a print loop.
         For use with external task schedulers.
         """
 
         self.maybe_create_tables()
-        self.ping_speedtest_save()
+        self.ping_speedtest_save(_test_ping_data=_test_ping_data)
 
 
 # --------
@@ -206,7 +209,7 @@ if __name__ == '__main__':
     parser.add_argument('--ping-count', type=int, default=25, help='Number of pings to perform during each test')
     parser.add_argument('--test-delay', type=int, default=10, help='Delay between each test, in minutes')
     parser.add_argument('--timezone', type=str, default='US/Pacific', help='Timezone to use for log timestamps')
-    parser.add_argument('--timestamp-format', type=str, default='YY/MM/DD HH:mm', help='Timezone format for logs')
+    parser.add_argument('--timestamp-format', type=str, default='YY/MM/DD HH:mm:ss', help='Timezone format for logs. Excluding seconds (ss) may cause database errors.')
     parser.add_argument('--run-console-loop', type=str, default='y', choices=['y', 'n', 'Y', 'N'], help='Run in console loop (Y/n). "n" allows for the use of other task schedulers.')
 
     args = parser.parse_args()
