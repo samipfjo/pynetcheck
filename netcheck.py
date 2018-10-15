@@ -33,12 +33,12 @@ class PyNetCheck:
         self.timezone = timezone
         self.timestamp_format = timestamp_format
 
-        if sys.platform in ('linux', 'cygwin', 'darwin') or _test_platform in ('linux', 'cygwin', 'darwin'):
+        if (_test_platform is None and sys.platform in ('linux', 'cygwin', 'darwin')) or _test_platform in ('linux', 'cygwin', 'darwin'):
             self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
             self.min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
 
-        elif sys.platform == 'win32' or _test_platform == 'win32':
-            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d{1,3})% loss')
+        elif (_test_platform is None and sys.platform == 'win32') or _test_platform == 'win32':
+            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d+)% loss')
             self.min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
 
         else:
