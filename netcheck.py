@@ -21,6 +21,11 @@ import speedtest
 class PyNetCheck:
 
     def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format):
+        """
+        Interface for automated ping and throughput (speed) tests.
+        See command line options for usage.
+        """
+
         self.ping_count = ping_count
         self.ping_host = ping_host
         self.test_delay = test_delay
@@ -167,7 +172,7 @@ class PyNetCheck:
                 speedtest_writer.writerows(speedtest_data)
 
     # ----
-    def run(self):
+    def loop(self):
         """
         Create tables (if needed), and start running the test loop.
         """
@@ -178,6 +183,16 @@ class PyNetCheck:
         while True:
             self.ping_speedtest_save()
             time.sleep(self.test_delay * 60)
+
+    # ----
+    def run_once(self):
+        """
+        Runs the ping/speedtest once rather than in a print loop.
+        For use with external task schedulers.
+        """
+
+        self.maybe_create_tables()
+        self.ping_speedtest_save()
 
 
 # --------
@@ -192,6 +207,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-delay', type=int, default=10, help='Delay between each test, in minutes')
     parser.add_argument('--timezone', type=str, default='US/Pacific', help='Timezone to use for log timestamps')
     parser.add_argument('--timestamp-format', type=str, default='YY/MM/DD HH:mm', help='Timezone format for logs')
+    parser.add_argument('--run-console-loop', type=str, default='y', choices=['y', 'n', 'Y', 'N'], help='Run in console loop (Y/n). "n" allows for the use of other task schedulers.')
 
     args = parser.parse_args()
 
@@ -203,7 +219,11 @@ if __name__ == '__main__':
                      timestamp_format=args.timestamp_format)
 
     try:
-        pnc.run()
+        if args.run_console_loop.lower() == 'y':
+            pnc.loop()
+
+        else:
+            pnc.run_once()
 
     except KeyboardInterrupt:
         pnc.consprint('\nDumping most recent data to CSVs...')
