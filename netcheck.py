@@ -4,7 +4,7 @@ Description   :: A tool for automated ping and speedtest scheduling, configurabl
 Project Home  :: https://github.com/luketimothyjones/pynetcheck
 License       :: MIT + attribution (maintaining this header block is plenty)
 Contributors  :: Luke Pflibsen-Jones [GH: luketimothyjones] (author)
-
+              :: Joseph Redfern [GH: https://github.com/JosephRedfern]  (cross-platform support, conversion into class, CLI)
 """
 
 import csv
@@ -19,6 +19,7 @@ import speedtest
 
 
 class PyNetCheck:
+
     def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format):
         self.ping_count = ping_count
         self.ping_host = ping_host
@@ -30,13 +31,15 @@ class PyNetCheck:
         if sys.platform in ('linux', 'cygwin', 'darwin'):
             self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
             self.min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
+
         elif sys.platform == 'win32':
             self.percent_lost_re = re.compile(r'(?P<percent_lost>\d{1,3})% loss')
             self.min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
+
         else:
             raise Exception('Unsupported Platform.')
 
-
+    # ----
     def maybe_create_tables(self):
         """
         Creates database tables if they do not already exist
@@ -66,13 +69,16 @@ class PyNetCheck:
         self.db.execute(pings)
         self.db.execute(speedtests)
 
+    # ----
     def consprint(self, string='', end='\n'):
         """
         Helper method to print to console, allowing previous line to be over-written.
         """
+
         sys.stdout.write(string + end)
         sys.stdout.flush()
 
+    # ----
     def ping_speedtest_save(self):
         """
         Run single ping test, speed test, and write results to DB.
@@ -96,7 +102,7 @@ class PyNetCheck:
         speedtest_server = f'{sptest.results.server["sponsor"]} ({sptest.results.server["name"]})'
 
         self.consprint(f'\r{datetime}   {percent_lost:<7}{min_ms:<7}{max_ms:<7}{average_ms:<7}|    '
-                f'{speedtest_ping:<7}{"{:.2f}".format(speedtest_dl_mbps):<11}{"{:.2f}".format(speedtest_up_mbps):<11}{speedtest_server}')
+                       f'{speedtest_ping:<7}{"{:.2f}".format(speedtest_dl_mbps):<11}{"{:.2f}".format(speedtest_up_mbps):<11}{speedtest_server}')
 
         # Save results to database
         with self.db:
@@ -112,6 +118,7 @@ class PyNetCheck:
                             """,
                             (datetime, speedtest_ping, speedtest_dl_mbps, speedtest_up_mbps, speedtest_server))
 
+    # ----
     def execute_ping(self, host=None, count=None):
         """
         Cross-platform ping implementation. Only tested under linux, but should be
@@ -123,8 +130,10 @@ class PyNetCheck:
 
         if sys.platform in ('linux', 'cygwin', 'darwin'):
             data = str(subprocess.Popen(['ping', host, '-c', str(count)], stdout=subprocess.PIPE).stdout.read())
+
         elif sys.platform == 'win32':
-            data = str(subprocess.Popen(['ping', host, '-n', str(count)], stdout=subprocess.PIPE).stdout.read())[2:-1]
+            data = str(subprocess.Popen(['ping', host, '-n', str(count)], stdout=subprocess.PIPE).stdout.read())
+
         else:
             raise Exception('Unsupported Platform.')
 
@@ -138,6 +147,7 @@ class PyNetCheck:
 
         return percent_lost, min_ms, average_ms, max_ms
 
+    # ----
     def dump_data_to_csv(self):
         csv.register_dialect('pretty', delimiter='\t', quoting=csv.QUOTE_NONE)
 
@@ -156,10 +166,12 @@ class PyNetCheck:
                 speedtest_data = self.db.execute('SELECT * FROM speedtests').fetchall()
                 speedtest_writer.writerows(speedtest_data)
 
+    # ----
     def run(self):
         """
         Create tables (if needed), and start running the test loop.
         """
+
         self.maybe_create_tables()
         self.consprint('Date/time        Lost   Min    Max    Avg    |    Ping   Download   Upload     Server')
 
@@ -168,6 +180,7 @@ class PyNetCheck:
             time.sleep(self.test_delay * 60)
 
 
+# --------
 if __name__ == '__main__':
     import argparse
 
@@ -191,6 +204,7 @@ if __name__ == '__main__':
 
     try:
         pnc.run()
+
     except KeyboardInterrupt:
         pnc.consprint('\nDumping most recent data to CSVs...')
         pnc.dump_data_to_csv()
