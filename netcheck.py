@@ -33,13 +33,13 @@ class PyNetCheck:
         self.timezone = timezone
         self.timestamp_format = timestamp_format
 
-        if sys.platform in ('linux', 'cygwin', 'darwin') or _test_platform in ('linux', 'cygwin', 'darwin'):
-            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% packet loss')
-            self.min_max_avg_re = re.compile(r'min/avg/max/mdev = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
+        if (_test_platform is None and sys.platform in ('linux', 'cygwin', 'darwin')) or _test_platform in ('linux', 'cygwin', 'darwin'):
+            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d*[.,]?\d*)% (\w+ ?){1,2}')
+            self.min_max_avg_re = re.compile(r'\w+/\w+/\w+/\w+ = (?P<min>\d*[.,]?\d*)/(?P<avg>\d*[.,]?\d*)/(?P<max>\d*[.,]?\d*)')
 
-        elif sys.platform == 'win32' or _test_platform == 'win32':
-            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d{1,3})% loss')
-            self.min_max_avg_re = re.compile(r'Minimum = (?P<min>\d+)ms, Maximum = (?P<max>\d+)ms, Average = (?P<avg>\d+)ms')
+        elif (_test_platform is None and sys.platform == 'win32') or _test_platform == 'win32':
+            self.percent_lost_re = re.compile(r'(?P<percent_lost>\d{1,3})% (\w+ ?){1,2}')
+            self.min_max_avg_re = re.compile(r'\w+ = (?P<min>\d+)ms, \w+ = (?P<max>\d+)ms, \w+ = (?P<avg>\d+)ms')
 
         else:
             raise Exception('Unsupported Platform.')
@@ -181,7 +181,7 @@ class PyNetCheck:
         """
 
         self.maybe_create_tables()
-        self.consprint('Date/time        Lost   Min    Max    Avg    |    Ping   Download   Upload     Server')
+        self.consprint('Date/time           Lost   Min    Max    Avg    |    Ping   Download   Upload     Server')
 
         while True:
             self.ping_speedtest_save()
@@ -204,8 +204,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Check connection latency speed!',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--ping-host', type=str, default='google.com', help='Hostname or ip to ping')
-    parser.add_argument('--db-filename', type=str, default='connection_date.sqlite', help='Database filename')
+    parser.add_argument('--ping-host', type=str, default='www.google.com', help='Hostname or ip to ping')
+    parser.add_argument('--db-filename', type=str, default='connection_data.sqlite', help='Database filename')
     parser.add_argument('--ping-count', type=int, default=25, help='Number of pings to perform during each test')
     parser.add_argument('--test-delay', type=int, default=10, help='Delay between each test, in minutes')
     parser.add_argument('--timezone', type=str, default='US/Pacific', help='Timezone to use for log timestamps')

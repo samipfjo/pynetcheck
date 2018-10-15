@@ -24,6 +24,10 @@ class TestPingParsing(unittest.TestCase):
         percent_lost, min_ms, average_ms, max_ms = self.check_platform('win32', 'windows10.txt')
 
     # ----
+    def test_windows_10_german(self):
+        percent_lost, min_ms, average_ms, max_ms = self.check_platform('win32', 'windows10_german.txt')
+
+    # ----
     def test_ubuntu(self):
         percent_lost, min_ms, average_ms, max_ms = self.check_platform('linux', 'ubuntu.txt')
 
