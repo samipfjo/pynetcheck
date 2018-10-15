@@ -1,0 +1,10 @@
+Ping wird ausgeführt für google.com [172.217.21.110] mit 32 Bytes Daten:
+Antwort von 172.217.21.110: Bytes=32 Zeit=8ms TTL=54
+Antwort von 172.217.21.110: Bytes=32 Zeit=8ms TTL=54
+Antwort von 172.217.21.110: Bytes=32 Zeit=8ms TTL=54
+Antwort von 172.217.21.110: Bytes=32 Zeit=8ms TTL=54
+
+Ping-Statistik für 173.194.113.95:
+    Pakete: Gesendet = 4, Empfangen = 4, Verloren = 0 (0% Verlust),
+Ca. Zeitangaben in Millisek.:
+    Minimum = 0ms, Maximum = 0ms, Mittelwert = 0ms
