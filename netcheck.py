@@ -211,6 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--timezone', type=str, default='US/Pacific', help='Timezone to use for log timestamps')
     parser.add_argument('--timestamp-format', type=str, default='YY/MM/DD HH:mm:ss', help='Timezone format for logs. Excluding seconds (ss) may cause database errors.')
     parser.add_argument('--run-console-loop', type=str, default='y', choices=['y', 'n', 'Y', 'N'], help='Run in console loop (Y/n). "n" allows for the use of other task schedulers.')
+    parser.add_argument('--dump-csv', action='store_true', help='Dump database to CSVs and exit')
 
     args = parser.parse_args()
 
@@ -222,7 +223,12 @@ if __name__ == '__main__':
                      timestamp_format=args.timestamp_format)
 
     try:
-        if args.run_console_loop.lower() == 'y':
+        if args.dump_csv:
+            pnc.consprint('\nDumping database to CSVs...')
+            pnc.dump_data_to_csv()
+            pnc.consprint()
+
+        elif args.run_console_loop.lower() == 'y':
             pnc.loop()
 
         else:
