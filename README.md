@@ -22,5 +22,6 @@ Currently tested on Windows 10 and Ubuntu. Other flavors of Linux will almost ce
         --timezone [US/Pacific] ~ Timezone to use for log timestamps
         --timestamp-format [YY/MM/DD HH:mm:ss] ~ Timezone format for logs. Excluding seconds (ss) may cause database errors.
         --db-filename [connection_data.sqlite] ~ Database filename
+        --dump-csv ~ Dump database to CSVs and exit
   
   Exit with ctrl+c, upon which the data will be dumped to two tab-delimited CSVs
