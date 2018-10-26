@@ -5,7 +5,6 @@ Project Home  :: https://github.com/luketimothyjones/pynetcheck
 License       :: MIT + attribution (maintaining this header block is plenty)
 Contributors  :: Luke Pflibsen-Jones [GH: luketimothyjones] (author)
               :: Joseph Redfern [GH: JosephRedfern]  (cross-platform support, conversion into class, basic CLI)
-              :: H. Kamran [GH: hkamran80] (code cleanup, import check)
 """
 
 import csv
