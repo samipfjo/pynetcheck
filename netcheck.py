@@ -19,7 +19,7 @@ try:
   import arrow
   import speedtest
 except ImportError:
-  sys.exit("You need \"arrow\" and \"speedtest-cli\"")
+  sys.exit("This program requires \"arrow\" and \"speedtest-cli\" \nInstall them with \"pip3 install -r requirements.txt\"")
 
 
 class PyNetCheck:
