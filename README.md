@@ -1,7 +1,7 @@
 # pynetcheck
 Scheduled ping checks and speedtests with data persistence.
 
-Currently tested on Windows 10 and Ubuntu. Other flavors of Linux will almost certainly work, and macOS may, too.
+Currently tested on Windows 10, Ubuntu, and macOS. Other flavors of Linux will almost certainly work, too.
 
 &nbsp;
 
@@ -24,4 +24,4 @@ Currently tested on Windows 10 and Ubuntu. Other flavors of Linux will almost ce
         --db-filename [connection_data.sqlite] ~ Database filename
         --dump-csv ~ Dump database to CSVs and exit
   
-  Exit with ctrl+c, upon which the data will be dumped to two tab-delimited CSVs
+  Exit with CTRL+C, upon which the data will be dumped to two tab-delimited CSVs
