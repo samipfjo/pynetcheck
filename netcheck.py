@@ -5,6 +5,7 @@ Project Home  :: https://github.com/luketimothyjones/pynetcheck
 License       :: MIT + attribution (maintaining this header block is plenty)
 Contributors  :: Luke Pflibsen-Jones [GH: luketimothyjones] (author)
               :: Joseph Redfern [GH: JosephRedfern]  (cross-platform support, conversion into class, basic CLI)
+              :: H. Kamran [GH: hkamran80] (code cleanup, import check)
 """
 
 import csv
@@ -14,12 +15,14 @@ import subprocess
 import sys
 import time
 
-import arrow
-import speedtest
+try:
+  import arrow
+  import speedtest
+except ImportError:
+  sys.exit("You need \"arrow\" and \"speedtest-cli\"")
 
 
 class PyNetCheck:
-
     def __init__(self, ping_count, ping_host, test_delay, db_filename, timezone, timestamp_format, _test_platform=None):
         """
         Interface for automated ping and throughput (speed) tests.
@@ -227,13 +230,10 @@ if __name__ == '__main__':
             pnc.consprint('\nDumping database to CSVs...')
             pnc.dump_data_to_csv()
             pnc.consprint()
-
         elif args.run_console_loop.lower() == 'y':
             pnc.loop()
-
         else:
             pnc.run_once()
-
     except KeyboardInterrupt:
         pnc.consprint('\nDumping most recent data to CSVs...')
         pnc.dump_data_to_csv()
