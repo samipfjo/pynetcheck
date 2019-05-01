@@ -6,6 +6,11 @@ from netcheck import PyNetCheck
 
 
 class TestPingParsing(unittest.TestCase):
+    """
+    These tests read from the ping output samples in this directory to ensure that the
+    program correctly parses ping ouput across all target platforms regardless of the
+    current development platform.
+    """
 
     def check_platform(self, platform, filename):
         pnc = PyNetCheck(ping_count=4,
@@ -33,8 +38,7 @@ class TestPingParsing(unittest.TestCase):
 
     # ----
     def test_macos(self):
-        # self.fail('macOS test not yet implemented')
-        pass
+        percent_lost, min_ms, average_ms, max_ms = self.check_platform('darwin', 'macos_sierra.txt')
 
 
 # ----
