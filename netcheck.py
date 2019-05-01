@@ -47,7 +47,7 @@ class PyNetCheck:
     # ----
     def maybe_create_tables(self):
         """
-        Creates database tables if they do not already exist
+        Creates database tables if they do not already exist.
         """
 
         pings = '''
@@ -77,7 +77,8 @@ class PyNetCheck:
     # ----
     def consprint(self, string='', end='\n'):
         """
-        Helper method to print to console, allowing previous line to be over-written.
+        Wrapper for stdout for better compatibility with external handlers and
+        more consistent cross-platform behavior on the command line.
         """
 
         sys.stdout.write(string + end)
@@ -126,24 +127,21 @@ class PyNetCheck:
     # ----
     def execute_ping(self, host=None, count=None, _test_data=None):
         """
-        Cross-platform ping implementation. Only tested under linux, but should be
-        functional under macOS and Cygwin as AFAIK their outputs are the same...
+        Cross-platform ping implementation
         """
 
-        host = host or self.ping_host
-        count = count or self.ping_count
-
+        host = host if host is not None else self.ping_host
+        count = count if count is not None else self.ping_count
+        is_nix = sys.platform in ('linux', 'cygwin', 'darwin')
+        
         if _test_data is not None:
             data = _test_data
 
-        elif sys.platform in ('linux', 'cygwin', 'darwin'):
-            data = str(subprocess.Popen(['ping', host, '-c', str(count)], stdout=subprocess.PIPE).stdout.read())
-
-        elif sys.platform == 'win32':
-            data = str(subprocess.Popen(['ping', host, '-n', str(count)], stdout=subprocess.PIPE).stdout.read())
+        elif is_nix or sys.platform == 'win32':
+            data = str(subprocess.Popen(['ping', host, ('-c' if is_nix else '-n'), str(count)], stdout=subprocess.PIPE).stdout.read())
 
         else:
-            raise Exception('Unsupported Platform.')
+            raise Exception('Unsupported platform.')
 
         percent_lost_match = self.percent_lost_re.search(data)
         timing_match = self.min_max_avg_re.search(data)
