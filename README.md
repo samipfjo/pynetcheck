@@ -1,7 +1,7 @@
 # pynetcheck
 Scheduled ping checks and speedtests with data persistence.
 
-Currently tested on Windows 10 and Ubuntu. Other flavors of Linux will almost certainly work, and macOS may, too.
+Currently tested on Windows 10, Ubuntu, and MacOS Sierra. Other flavors of Linux will almost certainly work; please create an issue if you find one that doesn't.
 
 &nbsp;
 
